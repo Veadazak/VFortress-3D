@@ -49,6 +49,7 @@ namespace WorldGeneration.Layers
         }
         private void Update()
         {
+            //------check the active layer---
             if( ParentWorld.ActiveLayer == LayerData.LayerNumber)
             {
                 activeLayer = true;
