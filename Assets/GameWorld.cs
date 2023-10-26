@@ -10,14 +10,20 @@ namespace WorldGeneration
     {
         public List<LayerData> LayerDatas = new List<LayerData>();
 
-        public int layerNum = 5;
+        public int layerNum;
         public LayerRenderer layerPrefab;
-        public int ActiveLayer = 4;
-        private int activeLayerMax = 4;
+        public int ActiveLayer;
+        private int activeLayerMax;
         private int activeLayerMin = 0;
 
+        private void Awake()
+        {
+            activeLayerMax = layerNum;
+            ActiveLayer = layerNum;
+        }
         private void Start()
         {
+            
             for (int i = 0; i <= layerNum; i++)
             {
                 Vector3Int position = new Vector3Int(0, i, 0);
@@ -53,6 +59,7 @@ namespace WorldGeneration
             {
                 ActiveLayer++;
                 if (ActiveLayer >= activeLayerMax) { ActiveLayer = activeLayerMax; }
+                
             }
 
             if (Input.GetKeyDown(KeyCode.DownArrow))

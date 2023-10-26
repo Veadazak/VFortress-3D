@@ -167,9 +167,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c85ff2844896fa46b3013fc46d7cab7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  layerNum: 4
+  layerNum: 6
   layerPrefab: {fileID: 2902701186010245803, guid: e8ecf46e9ba36024c99ae6d65fdbb485, type: 3}
-  ActiveLayer: 5
+  ActiveLayer: 8
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
