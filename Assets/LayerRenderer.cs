@@ -26,8 +26,8 @@ namespace WorldGeneration.Layers
 
         private LayerData upperLayer;
         private LayerData lowerLayer;
-        public bool activeLayer= false;
-        private static ProfilerMarker GenerationMarker = new ProfilerMarker(ProfilerCategory.Loading, name:"Generating");
+        public bool activeLayer = false;
+        private static ProfilerMarker GenerationMarker = new ProfilerMarker(ProfilerCategory.Loading, name: "Generating");
 
         private static ProfilerMarker MeshingMaker = new ProfilerMarker(ProfilerCategory.Loading, "Meshing");
 
@@ -41,7 +41,7 @@ namespace WorldGeneration.Layers
             {
                 upperLayer = ParentWorld.LayerDatas[LayerData.LayerNumber + 1];
             }
-            
+
             blockMesh = new Mesh();
             RegenerateMesh();
             GetComponent<MeshFilter>().sharedMesh = blockMesh;
@@ -50,20 +50,31 @@ namespace WorldGeneration.Layers
         private void Update()
         {
             //------check the active layer---
-            if( ParentWorld.ActiveLayer >= LayerData.LayerNumber)
+            if (ParentWorld.ActiveLayer >= LayerData.LayerNumber)
             {
                 activeLayer = true;
-                //gameObject.GetComponent<MeshRenderer>().enabled = true;
+                gameObject.GetComponent<MeshRenderer>().enabled = true;
                 RegenerateMesh();
             }
             if (ParentWorld.ActiveLayer < LayerData.LayerNumber)
             {
                 activeLayer = false;
-                //gameObject.GetComponent<MeshRenderer>().enabled = false;
+                gameObject.GetComponent<MeshRenderer>().enabled = false;
                 RegenerateMesh();
             }
             //if (activeLayer=!activeLayer) { RegenerateMesh(); }
         }
+        public void SpawnBlock(int index)
+        {
+            LayerData.Blocks[index] = BlockType.Stone;
+            RegenerateMesh();
+        }
+        public void DestroyBlock(int index)
+        {
+            LayerData.Blocks[index] = BlockType.Air;
+            RegenerateMesh();
+        }
+
         public void RegenerateMesh()
         {
             MeshingMaker.Begin();
@@ -71,14 +82,11 @@ namespace WorldGeneration.Layers
             verticies.Clear();
             uvs.Clear();
             triangles.Clear();
-            if (activeLayer == true)
+            for (int x = 0; x < LayerWidth; x++)
             {
-                for (int x = 0; x < LayerWidth; x++)
+                for (int z = 0; z < LayerWidth; z++)
                 {
-                    for (int z = 0; z < LayerWidth; z++)
-                    {
-                        GenerateBlock(x, 0, z);
-                    }
+                    GenerateBlock(x, 0, z);
                 }
             }
             blockMesh.triangles = Array.Empty<int>();
@@ -90,7 +98,7 @@ namespace WorldGeneration.Layers
 
             blockMesh.RecalculateBounds();
             blockMesh.RecalculateNormals();
-            //GetComponent<MeshCollider>().sharedMesh = blockMesh;
+            GetComponent<MeshCollider>().sharedMesh = blockMesh;
             GetComponent<MeshFilter>().mesh = blockMesh;
             MeshingMaker.End();
         }
@@ -146,19 +154,18 @@ namespace WorldGeneration.Layers
                 blockPosition.z >= 0 && blockPosition.z < LayerWidth)
             {
                 int index = blockPosition.x + blockPosition.z * LayerWidth;
-                return BlockType.Dirt;
-                //return ChunkData.Blocks[index];
+                return LayerData.Blocks[index];
             }
-            if(blockPosition.y<0 && activeLayer == true)
+            if (blockPosition.y < 0 && activeLayer == true)
             {
-                if(lowerLayer == null) { return BlockType.Air; }
+                if (lowerLayer == null) { return BlockType.Air; }
                 blockPosition.y++;
                 int index = blockPosition.x + blockPosition.z * LayerWidth;
                 return lowerLayer.Blocks[index];
             }
-            if(blockPosition.y>0 && activeLayer == true)
+            if (blockPosition.y > 0 && activeLayer == true)
             {
-                if(upperLayer == null||upperLayer.Renderer.activeLayer==false) { return BlockType.Air; }
+                if (upperLayer == null || upperLayer.Renderer.activeLayer == false) { return BlockType.Air; }
                 blockPosition.y--;
                 int index = blockPosition.x + blockPosition.z * LayerWidth;
                 return upperLayer.Blocks[index];

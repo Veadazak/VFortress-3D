@@ -16,6 +16,8 @@ namespace WorldGeneration
         private int activeLayerMax;
         private int activeLayerMin = 0;
 
+        private Camera mainCamera;
+
         private void Awake()
         {
             activeLayerMax = layerNum;
@@ -23,7 +25,8 @@ namespace WorldGeneration
         }
         private void Start()
         {
-            
+            mainCamera = Camera.main;
+
             for (int i = 0; i <= layerNum; i++)
             {
                 Vector3Int position = new Vector3Int(0, i, 0);
@@ -55,11 +58,46 @@ namespace WorldGeneration
         }
         private void Update()
         {
+            CheckInput();
+        }
+
+
+        private void CheckInput()
+        {
+            if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+            {
+                bool isDestroing = Input.GetMouseButtonDown(0);
+                Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
+                if (Physics.Raycast(ray, out var hitInfo))
+                {
+                    Vector3 blockCenter;
+                    if (isDestroing)
+                    {
+                        blockCenter = hitInfo.point - hitInfo.normal;
+                    }
+                    else
+                    {
+                        blockCenter = hitInfo.point + hitInfo.normal;
+                    }
+                    Vector3Int blockWorldPos = Vector3Int.FloorToInt(blockCenter);
+                    int index = blockWorldPos.x + blockWorldPos.z * LayerRenderer.LayerWidth;
+                    if (isDestroing)
+                    {
+                        LayerDatas[blockWorldPos.y].Renderer.DestroyBlock(index);
+                    }
+                    else
+                    {
+
+                        LayerDatas[blockWorldPos.y].Renderer.SpawnBlock(index);
+                    }
+
+                }
+            }
+
             if (Input.GetKeyDown(KeyCode.UpArrow))
             {
                 ActiveLayer++;
                 if (ActiveLayer >= activeLayerMax) { ActiveLayer = activeLayerMax; }
-                
             }
 
             if (Input.GetKeyDown(KeyCode.DownArrow))
@@ -67,7 +105,9 @@ namespace WorldGeneration
                 ActiveLayer--;
                 if (ActiveLayer <= activeLayerMin) { ActiveLayer = activeLayerMin; }
             }
+
         }
+
 
     }
 }
