@@ -26,6 +26,8 @@ namespace WorldGeneration.Layers
 
         private LayerData upperLayer;
         private LayerData lowerLayer;
+        public int UP;
+        public int DOWN;
         public bool activeLayer = false;
         private static ProfilerMarker GenerationMarker = new ProfilerMarker(ProfilerCategory.Loading, name: "Generating");
 
@@ -36,10 +38,12 @@ namespace WorldGeneration.Layers
             if (LayerData.LayerNumber > 0)
             {
                 lowerLayer = ParentWorld.LayerDatas[LayerData.LayerNumber - 1];
+                DOWN = lowerLayer.LayerNumber;
             }
-            if (LayerData.LayerNumber < 4)
+            if (LayerData.LayerNumber < ParentWorld.activeLayerMax)
             {
                 upperLayer = ParentWorld.LayerDatas[LayerData.LayerNumber + 1];
+                UP = upperLayer.LayerNumber;
             }
 
             blockMesh = new Mesh();
@@ -49,7 +53,7 @@ namespace WorldGeneration.Layers
         }
         private void Update()
         {
-            //------check the active layer---
+            /*//------check the active layer---
             if (ParentWorld.ActiveLayer >= LayerData.LayerNumber)
             {
                 activeLayer = true;
@@ -61,23 +65,12 @@ namespace WorldGeneration.Layers
                 activeLayer = false;
                 gameObject.GetComponent<MeshRenderer>().enabled = false;
                 RegenerateMesh();
-            }
-            //if (activeLayer=!activeLayer) { RegenerateMesh(); }
+            }*/
         }
-        public void SpawnBlock(int index)
-        {
-            LayerData.Blocks[index] = BlockType.Stone;
-            RegenerateMesh();
-        }
-        public void DestroyBlock(int index)
-        {
-            LayerData.Blocks[index] = BlockType.Air;
-            RegenerateMesh();
-        }
+        
 
         public void RegenerateMesh()
         {
-            MeshingMaker.Begin();
             MeshingMaker.Begin();
             verticies.Clear();
             uvs.Clear();
@@ -153,30 +146,52 @@ namespace WorldGeneration.Layers
                 blockPosition.y == 0 &&
                 blockPosition.z >= 0 && blockPosition.z < LayerWidth)
             {
-                int index = blockPosition.x + blockPosition.z * LayerWidth;
+                int index = blockPosition.x + blockPosition.z * LayerWidthSq;
                 return LayerData.Blocks[index];
             }
             if (blockPosition.y < 0 && activeLayer == true)
             {
                 if (lowerLayer == null) { return BlockType.Air; }
                 blockPosition.y++;
-                int index = blockPosition.x + blockPosition.z * LayerWidth;
+                int index = blockPosition.x + blockPosition.z * LayerWidthSq;
                 return lowerLayer.Blocks[index];
             }
             if (blockPosition.y > 0 && activeLayer == true)
             {
                 if (upperLayer == null || upperLayer.Renderer.activeLayer == false) { return BlockType.Air; }
                 blockPosition.y--;
-                int index = blockPosition.x + blockPosition.z * LayerWidth;
+                int index = blockPosition.x + blockPosition.z * LayerWidthSq ;
                 return upperLayer.Blocks[index];
             }
-            /*else
-            {
-                if (blockPosition.y != 0) return BlockType.Air;
-            }*/
             return BlockType.Air;
         }
+        public void ActivateLayer()
+        {
+            activeLayer = true;
+            gameObject.GetComponent<MeshRenderer>().enabled = true;
+            RegenerateMesh();
 
+        }
+        public void DeactivateLayer()
+        {
+            activeLayer = false;
+            gameObject.GetComponent<MeshRenderer>().enabled = false;
+            RegenerateMesh();
+        }
+        public void SpawnBlock(int index)
+        {
+            if (LayerData.Blocks[index] == BlockType.Air)
+            {
+                LayerData.Blocks[index] = BlockType.Stone;
+                RegenerateMesh();
+            }
+        }
+        public void DestroyBlock(int index)
+        {
+            LayerData.Blocks[index] = BlockType.Air;
+            RegenerateMesh();
+            Debug.Log("block # " + index);
+        }
         //----------------------------- Generate sides ---------------
         private void GenerateLeftSide(Vector3Int blockPosition)
         {

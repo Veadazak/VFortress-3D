@@ -170,6 +170,8 @@ MonoBehaviour:
   layerNum: 6
   layerPrefab: {fileID: 2902701186010245803, guid: e8ecf46e9ba36024c99ae6d65fdbb485, type: 3}
   ActiveLayer: 8
+  activeLayerMax: 8
+  activeLayerMin: 0
 --- !u!1 &624044836
 GameObject:
   m_ObjectHideFlags: 0
@@ -390,8 +392,8 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
+  near clip plane: 0.01
+  far clip plane: 1004
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -578,7 +580,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 10, y: 10}
+  m_SizeDelta: {x: 3, y: 3}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1439746135
 MonoBehaviour:
@@ -593,7 +595,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.9245283, g: 0.19624424, b: 0.19624424, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -683,7 +685,7 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 2
+  m_Height: 2.7
   m_Radius: 0.5
   m_SlopeLimit: 45
   m_StepOffset: 0.3
@@ -702,7 +704,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 275599ab15ce16d46a1c60354c2ac053, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 3
+  speed: 5
   gravity: -1
   jumpHight: 2
   isGrounded: 0

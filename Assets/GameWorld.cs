@@ -4,7 +4,7 @@ using UnityEditor.Overlays;
 using UnityEngine;
 using WorldGeneration.Layers;
 
-namespace WorldGeneration
+namespace WorldGeneration.Layers
 {
     public class GameWorld : MonoBehaviour
     {
@@ -13,8 +13,8 @@ namespace WorldGeneration
         public int layerNum;
         public LayerRenderer layerPrefab;
         public int ActiveLayer;
-        private int activeLayerMax;
-        private int activeLayerMin = 0;
+        public int activeLayerMax;
+        public int activeLayerMin = 0;
 
         private Camera mainCamera;
 
@@ -45,12 +45,12 @@ namespace WorldGeneration
 
         public BlockType[] GenerateTerrain()
         {
-            var result = new BlockType[LayerRenderer.LayerWidth * LayerRenderer.LayerWidth];
+            var result = new BlockType[LayerRenderer.LayerWidth * LayerRenderer.LayerWidth * LayerRenderer.LayerWidthSq];
             for (int x = 0; x < LayerRenderer.LayerWidth; x++)
             {
                 for (int z = 0; z < LayerRenderer.LayerWidth; z++)
                 {
-                    int index = x + z * LayerRenderer.LayerWidth;
+                    int index = x + z * LayerRenderer.LayerWidthSq;
                     result[index] = BlockType.Dirt;
                 }
             }
@@ -73,14 +73,18 @@ namespace WorldGeneration
                     Vector3 blockCenter;
                     if (isDestroing)
                     {
-                        blockCenter = hitInfo.point - hitInfo.normal;
+                        blockCenter = hitInfo.point - hitInfo.normal / 2;
+                        Debug.Log("block center " + blockCenter);
+                        Debug.Log("Hit info " + hitInfo);
+                        Debug.Log("Ray to " + ray);
+                        Debug.DrawRay(mainCamera.ViewportToScreenPoint(new Vector3(0.5f, 0.5f)), hitInfo.point, Color.red);
                     }
                     else
                     {
-                        blockCenter = hitInfo.point + hitInfo.normal;
+                        blockCenter = hitInfo.point + hitInfo.normal / 2;
                     }
                     Vector3Int blockWorldPos = Vector3Int.FloorToInt(blockCenter);
-                    int index = blockWorldPos.x + blockWorldPos.z * LayerRenderer.LayerWidth;
+                    int index = blockWorldPos.x + blockWorldPos.z * LayerRenderer.LayerWidthSq;
                     if (isDestroing)
                     {
                         LayerDatas[blockWorldPos.y].Renderer.DestroyBlock(index);
@@ -97,18 +101,37 @@ namespace WorldGeneration
             if (Input.GetKeyDown(KeyCode.UpArrow))
             {
                 ActiveLayer++;
-                if (ActiveLayer >= activeLayerMax) { ActiveLayer = activeLayerMax; }
+                if (ActiveLayer >= activeLayerMax)
+                {
+                    ActiveLayer = activeLayerMax;
+                }
+                LayerActivation();
             }
 
             if (Input.GetKeyDown(KeyCode.DownArrow))
             {
                 ActiveLayer--;
-                if (ActiveLayer <= activeLayerMin) { ActiveLayer = activeLayerMin; }
+                if (ActiveLayer <= activeLayerMin)
+                {
+                    ActiveLayer = activeLayerMin;
+                }
+                LayerActivation();
             }
 
         }
 
+        private void LayerActivation()
+        {
+            for (int i = 0; i <= activeLayerMax; i++)
+            {
+                if (ActiveLayer >= i)
+                {
+                    LayerDatas[i].Renderer.ActivateLayer();
+                }
+                else { LayerDatas[i].Renderer.DeactivateLayer(); }
 
+            }
+        }
     }
 }
 
