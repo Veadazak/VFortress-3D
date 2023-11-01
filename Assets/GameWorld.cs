@@ -88,11 +88,19 @@ namespace WorldGeneration.Layers
                     if (isDestroing)
                     {
                         LayerDatas[blockWorldPos.y].Renderer.DestroyBlock(index);
+                        if (LayerDatas[blockWorldPos.y-1]!=null)
+                        {
+                            LayerDatas[blockWorldPos.y - 1].Renderer.RegenerateMesh();
+                        }
                     }
                     else
                     {
 
                         LayerDatas[blockWorldPos.y].Renderer.SpawnBlock(index);
+                        if (LayerDatas[blockWorldPos.y + 1] != null)
+                        {
+                            LayerDatas[blockWorldPos.y + 1].Renderer.RegenerateMesh();
+                        }
                     }
 
                 }
@@ -122,13 +130,16 @@ namespace WorldGeneration.Layers
 
         private void LayerActivation()
         {
-            for (int i = 0; i <= activeLayerMax; i++)
+            for (int i = activeLayerMax; i >= 0; i--)
             {
                 if (ActiveLayer >= i)
                 {
                     LayerDatas[i].Renderer.ActivateLayer();
                 }
-                else { LayerDatas[i].Renderer.DeactivateLayer(); }
+                else
+                {
+                    LayerDatas[i].Renderer.DeactivateLayer();
+                }
 
             }
         }

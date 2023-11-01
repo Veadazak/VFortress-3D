@@ -7,10 +7,8 @@ public class BlockInfo : ScriptableObject
 {
     public BlockType Type;
     public Vector2 textureNumber;
-    public Vector2 topTextureNumber;
-    public bool difTop;
-    //public Vector2 P
-
+    public Vector2 topTextureNumber;    
+    public bool difTop;    
     public AudioClip StepSound;
     public float TimeToBrak = 0.3f;
 }

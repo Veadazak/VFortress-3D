@@ -53,21 +53,35 @@ namespace WorldGeneration.Layers
         }
         private void Update()
         {
-            /*//------check the active layer---
-            if (ParentWorld.ActiveLayer >= LayerData.LayerNumber)
+            
+        }
+        public void ActivateLayer()
+        {
+            activeLayer = true;
+            gameObject.GetComponent<MeshRenderer>().enabled = true;
+            RegenerateMesh();
+
+        }
+        public void DeactivateLayer()
+        {
+            activeLayer = false;
+            gameObject.GetComponent<MeshRenderer>().enabled = false;
+            RegenerateMesh();
+        }
+        public void SpawnBlock(int index)
+        {
+            if (LayerData.Blocks[index] == BlockType.Air)
             {
-                activeLayer = true;
-                gameObject.GetComponent<MeshRenderer>().enabled = true;
+                LayerData.Blocks[index] = BlockType.Stone;
                 RegenerateMesh();
             }
-            if (ParentWorld.ActiveLayer < LayerData.LayerNumber)
-            {
-                activeLayer = false;
-                gameObject.GetComponent<MeshRenderer>().enabled = false;
-                RegenerateMesh();
-            }*/
         }
-        
+        public void DestroyBlock(int index)
+        {
+            LayerData.Blocks[index] = BlockType.Air;
+            RegenerateMesh();
+            Debug.Log("block # " + index);
+        }
 
         public void RegenerateMesh()
         {
@@ -102,6 +116,7 @@ namespace WorldGeneration.Layers
             Vector3Int blockPosition = new Vector3Int(x, y, z);
 
             BlockType blockType = GetBlockAtPosition(blockPosition);
+            
 
             if (blockType == BlockType.Air) return;
 
@@ -116,10 +131,18 @@ namespace WorldGeneration.Layers
                 GenerateLeftSide(blockPosition);
                 AddUvs(blockType, Vector2Int.right);
             }
-            if (GetBlockAtPosition(blockPosition + Vector3Int.up) == 0)
+            if (GetBlockAtPosition(blockPosition + Vector3Int.up) == 0|| GetBlockAtPosition(blockPosition + Vector3Int.up) == BlockType.Hiden)
             {
-                GenerateTopSide(blockPosition);
-                AddUvs(blockType, Vector2Int.up);
+                if (GetBlockAtPosition(blockPosition + Vector3Int.up) == 0)
+                {
+                    GenerateTopSide(blockPosition);
+                    AddUvs(blockType, Vector2Int.up);
+                }
+                else
+                {
+                    GenerateTopSide(blockPosition);
+                    AddUvs(BlockType.Hiden, Vector2Int.up);
+                }
             }
             /*if (GetBlockAtPosition(blockPosition + Vector3Int.down) == 0)
             {
@@ -158,40 +181,23 @@ namespace WorldGeneration.Layers
             }
             if (blockPosition.y > 0 && activeLayer == true)
             {
-                if (upperLayer == null || upperLayer.Renderer.activeLayer == false) { return BlockType.Air; }
+                if (upperLayer == null ) { return BlockType.Air; }                
                 blockPosition.y--;
                 int index = blockPosition.x + blockPosition.z * LayerWidthSq ;
-                return upperLayer.Blocks[index];
+                
+                if (upperLayer.Renderer.activeLayer == false && upperLayer.Blocks[index] != BlockType.Air && upperLayer != null)
+                {
+                    return BlockType.Hiden;
+                }
+                else
+                {
+                    return upperLayer.Blocks[index];
+                }
+
             }
             return BlockType.Air;
         }
-        public void ActivateLayer()
-        {
-            activeLayer = true;
-            gameObject.GetComponent<MeshRenderer>().enabled = true;
-            RegenerateMesh();
-
-        }
-        public void DeactivateLayer()
-        {
-            activeLayer = false;
-            gameObject.GetComponent<MeshRenderer>().enabled = false;
-            RegenerateMesh();
-        }
-        public void SpawnBlock(int index)
-        {
-            if (LayerData.Blocks[index] == BlockType.Air)
-            {
-                LayerData.Blocks[index] = BlockType.Stone;
-                RegenerateMesh();
-            }
-        }
-        public void DestroyBlock(int index)
-        {
-            LayerData.Blocks[index] = BlockType.Air;
-            RegenerateMesh();
-            Debug.Log("block # " + index);
-        }
+        
         //----------------------------- Generate sides ---------------
         private void GenerateLeftSide(Vector3Int blockPosition)
         {
