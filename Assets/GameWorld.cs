@@ -40,6 +40,7 @@ namespace WorldGeneration.Layers
                 layer.ParentWorld = this;
                 LayerDatas.Add(layerData);
             }
+            
 
         }
 
@@ -59,6 +60,11 @@ namespace WorldGeneration.Layers
         private void Update()
         {
             CheckInput();
+            if (LayerDatas[0].Renderer.activeLayer!=true)
+            {
+                LayerActivation();
+            }
+
         }
 
 
@@ -74,10 +80,6 @@ namespace WorldGeneration.Layers
                     if (isDestroing)
                     {
                         blockCenter = hitInfo.point - hitInfo.normal / 2;
-                        Debug.Log("block center " + blockCenter);
-                        Debug.Log("Hit info " + hitInfo);
-                        Debug.Log("Ray to " + ray);
-                        Debug.DrawRay(mainCamera.ViewportToScreenPoint(new Vector3(0.5f, 0.5f)), hitInfo.point, Color.red);
                     }
                     else
                     {
@@ -95,14 +97,12 @@ namespace WorldGeneration.Layers
                     }
                     else
                     {
-
                         LayerDatas[blockWorldPos.y].Renderer.SpawnBlock(index);
                         if (LayerDatas[blockWorldPos.y + 1] != null)
                         {
                             LayerDatas[blockWorldPos.y + 1].Renderer.RegenerateMesh();
                         }
                     }
-
                 }
             }
 
@@ -125,7 +125,6 @@ namespace WorldGeneration.Layers
                 }
                 LayerActivation();
             }
-
         }
 
         private void LayerActivation()
@@ -140,7 +139,6 @@ namespace WorldGeneration.Layers
                 {
                     LayerDatas[i].Renderer.DeactivateLayer();
                 }
-
             }
         }
     }
