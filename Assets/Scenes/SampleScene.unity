@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c85ff2844896fa46b3013fc46d7cab7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  layerNum: 30
+  layerNum: 20
   layerPrefab: {fileID: 2902701186010245803, guid: e8ecf46e9ba36024c99ae6d65fdbb485, type: 3}
   ActiveLayer: 8
   activeLayerMax: 8
@@ -685,8 +685,8 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 2.7
-  m_Radius: 0.5
+  m_Height: 0.9
+  m_Radius: 0.4
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08

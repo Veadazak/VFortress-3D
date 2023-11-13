@@ -27,40 +27,115 @@ namespace WorldGeneration.Layers
         {
             mainCamera = Camera.main;
 
-            for (int i = 0; i <= layerNum; i++)
+            for (int y = 0; y <= layerNum; y++)
             {
-                Vector3Int position = new Vector3Int(0, i, 0);
+                Vector3Int position = new Vector3Int(0, y, 0);
                 var layer = Instantiate(layerPrefab, position, Quaternion.identity);
 
                 LayerData layerData = new LayerData();
-                layerData.Blocks = GenerateTerrain();
-                layerData.LayerNumber = i;
+                layerData.Blocks = GenerateTerrain(y);
+                layerData.LayerNumber = y;
                 layerData.Renderer = layer;
                 layer.LayerData = layerData;
                 layer.ParentWorld = this;
                 LayerDatas.Add(layerData);
             }
-            
+
 
         }
 
-        public BlockType[] GenerateTerrain()
+        public BlockType[] GenerateTerrain(int y) // y - actual layer number
         {
             var result = new BlockType[LayerRenderer.LayerWidth * LayerRenderer.LayerWidth * LayerRenderer.LayerWidthSq];
             for (int x = 0; x < LayerRenderer.LayerWidth; x++)
             {
                 for (int z = 0; z < LayerRenderer.LayerWidth; z++)
                 {
+
                     int index = x + z * LayerRenderer.LayerWidthSq;
-                    result[index] = BlockType.Dirt;
+                    int r = Random.Range(0, layerNum); // r - just a random value
+                    if (y == 0)
+                    {
+                        result[index] = BlockType.Dirt;
+                    }
+                    else
+                    {
+
+                        int chance = CheckAround(x, y, z, 0);
+                        if (LayerDatas[y - 1].Blocks[index] == BlockType.Dirt)
+                        {
+                            if (y- chance >= layerNum / 2)
+                            {
+                                result[index] = BlockType.Air;
+                            }
+                            else
+                            {
+                                result[index] = BlockType.Dirt;
+                            }
+
+                        }
+                        else
+                        {
+                            if (y-r-chance >= layerNum / 2)
+                            {
+                                result[index] = BlockType.Dirt;
+                            }
+                            else
+                            {
+                                result[index] = BlockType.Air;
+                            }
+                        }
+                    }
+
                 }
             }
             return result;
         }
+
+        private int CheckAround(int x, int y, int z, int res)
+        {
+            int resultat = res;
+
+            int p5 = x + z * LayerRenderer.LayerWidthSq; ; // - center
+
+
+            if (x > 2 && x < LayerRenderer.LayerWidth - 2 &&
+                z > 2 && z < LayerRenderer.LayerWidth - 2)
+            {
+                int p1 = (x - 1) + (z + 1) * LayerRenderer.LayerWidthSq;
+                int p2 = (x) + (z + 1) * LayerRenderer.LayerWidthSq;
+                int p3 = (x + 1) + (z + 1) * LayerRenderer.LayerWidthSq;
+                int p4 = (x - 1) + (z) * LayerRenderer.LayerWidthSq;
+                int p6 = (x + 1) + (z) * LayerRenderer.LayerWidthSq;
+                int p7 = (x - 1) + (z - 1) * LayerRenderer.LayerWidthSq;
+                int p8 = (x) + (z - 1) * LayerRenderer.LayerWidthSq;
+                int p9 = (x + 1) + (z - 1) * LayerRenderer.LayerWidthSq;
+                if (LayerDatas[y - 1].Blocks[p1] == BlockType.Dirt) { resultat++; }
+                if (LayerDatas[y - 1].Blocks[p2] == BlockType.Dirt) { resultat++; }
+                if (LayerDatas[y - 1].Blocks[p3] == BlockType.Dirt) { resultat++; }
+                if (LayerDatas[y - 1].Blocks[p4] == BlockType.Dirt) { resultat++; }
+                if (LayerDatas[y - 1].Blocks[p6] == BlockType.Dirt) { resultat++; }
+                if (LayerDatas[y - 1].Blocks[p7] == BlockType.Dirt) { resultat++; }
+                if (LayerDatas[y - 1].Blocks[p8] == BlockType.Dirt) { resultat++; }
+                if (LayerDatas[y - 1].Blocks[p9] == BlockType.Dirt) { resultat++; }
+            }
+
+            if (x == 0 || x == LayerRenderer.LayerWidth)
+            {
+                resultat += 3;
+            }
+            if (z == 0 || z == LayerRenderer.LayerWidth)
+            {
+                resultat += 3;
+            }
+            Debug.Log(resultat);
+            return resultat;
+
+        }
         private void Update()
         {
             CheckInput();
-            if (LayerDatas[0].Renderer.activeLayer!=true)
+            if (LayerDatas[0].Renderer.activeLayer != true)
             {
                 LayerActivation();
             }
@@ -90,7 +165,7 @@ namespace WorldGeneration.Layers
                     if (isDestroing)
                     {
                         LayerDatas[blockWorldPos.y].Renderer.DestroyBlock(index);
-                        if (LayerDatas[blockWorldPos.y-1]!=null)
+                        if (LayerDatas[blockWorldPos.y - 1] != null)
                         {
                             LayerDatas[blockWorldPos.y - 1].Renderer.RegenerateMesh();
                         }
