@@ -1,58 +1,76 @@
-/*using System.Collections;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
+
 namespace WorldGeneration.Layers
 {
-    public class TerrainGenerator : MonoBehaviour
+    [CreateAssetMenu(menuName = "Terrain generator")]
+    public class TerrainGenerator : ScriptableObject
     {
-        private GameWorld parentWorld;
-
-        private LayerData lowerLayer; 
-        public LayerData LayerData;
-
-        private void Start()
+        public float BaseHeight = 1;
+        public NoiseOcataveSettings[] Octaves;
+        [Serializable]
+        public class NoiseOcataveSettings
         {
-            parentWorld = GetComponent<GameWorld>();
+            public FastNoiseLite.NoiseType NoiseType;
+            public float Frequency = 0.2f;
+            public float Amplitude = 1;
         }
-        public void GenerateTerrain()
+        private FastNoiseLite[] octaveNoises;
+
+        public void Init()
         {
-            for (int y = 0; y <= parentWorld.activeLayerMax; y++)
+            octaveNoises = new FastNoiseLite[Octaves.Length];
+            for (int i = 0; i < Octaves.Length; i++)
             {
-                for (int x = 0; x < LayerRenderer.LayerWidth; x++)
-                {
-                    for (int z = 0; z < LayerRenderer.LayerWidth; z++)
-                    {
-                        int index = x + z * LayerRenderer.LayerWidthSq;
-
-                        if (y == 0 || y == 1)
-                        {
-                            parentWorld.LayerDatas[y].Blocks[index] = BlockType.Dirt;
-                        }
-                        if (y > 2)
-                        {
-                            parentWorld.LayerDatas[LayerData.LayerNumber -1] = lowerLayer;
-                            {
-                                if (lowerLayer.Blocks[index] == BlockType.Dirt)
-                                {
-
-                                    if (Random.Range(0, y) > 5)
-                                    {
-                                        parentWorld.LayerDatas[y].Blocks[index] = BlockType.Air;
-                                    }
-                                    else
-                                    {
-                                        parentWorld.LayerDatas[y].Blocks[index] = BlockType.Dirt;
-                                    }
-                                }
-                            }
-                        }
-                        else { parentWorld.LayerDatas[y].Blocks[index] = BlockType.Air; }
-                    }
-                }
-                parentWorld.LayerDatas[y].Renderer.RegenerateMesh();
+                octaveNoises[i] = new FastNoiseLite();
+                octaveNoises[i].SetNoiseType(Octaves[i].NoiseType);
+                octaveNoises[i].SetFrequency(Octaves[i].Frequency);
             }
         }
-    }
+        public BlockType[] GenerateTerrain(int y) // y - actual layer number
+        {
+            var result = new BlockType[LayerRenderer.LayerWidth * LayerRenderer.LayerWidth * LayerRenderer.LayerWidthSq];
+            for (int x = 0; x < LayerRenderer.LayerWidth; x++)
+            {
+                for (int z = 0; z < LayerRenderer.LayerWidth; z++)
+                {
+                    float height = GetHeight(x, z);
 
+                    int index = x + z * LayerRenderer.LayerWidthSq;
+
+                    if (y < height)
+                    {
+                        int r = Random.Range(0, 10);
+                        if (r>8)
+                        {
+                            result[index] = BlockType.Stone;
+                        }
+                        else
+                        {
+                            result[index] = BlockType.Dirt;
+                        }
+                    }
+                    else
+                    {
+                        result[index] = BlockType.Air;
+                    }
+
+                }
+            }
+            return result;
+        }
+        private float GetHeight(float x, float y)
+        {
+            float result = BaseHeight;
+            for (int i = 0; i < Octaves.Length; i++)
+            {
+                float noise = octaveNoises[i].GetNoise(x, y);
+                result += noise * Octaves[i].Amplitude / 2;
+            }
+            return result;
+        }
+    }
 }
-*/

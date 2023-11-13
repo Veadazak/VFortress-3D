@@ -12,28 +12,31 @@ namespace WorldGeneration.Layers
 
         public int layerNum;
         public LayerRenderer layerPrefab;
+        public TerrainGenerator Generator;
         public int ActiveLayer;
         public int activeLayerMax;
         public int activeLayerMin = 0;
+
 
         private Camera mainCamera;
 
         private void Awake()
         {
+            layerNum =  (int)Generator.BaseHeight;
             activeLayerMax = layerNum;
             ActiveLayer = layerNum;
         }
         private void Start()
         {
             mainCamera = Camera.main;
-
+            Generator.Init();
             for (int y = 0; y <= layerNum; y++)
             {
                 Vector3Int position = new Vector3Int(0, y, 0);
                 var layer = Instantiate(layerPrefab, position, Quaternion.identity);
 
                 LayerData layerData = new LayerData();
-                layerData.Blocks = GenerateTerrain(y);
+                layerData.Blocks = Generator.GenerateTerrain(y);
                 layerData.LayerNumber = y;
                 layerData.Renderer = layer;
                 layer.LayerData = layerData;
@@ -44,54 +47,7 @@ namespace WorldGeneration.Layers
 
         }
 
-        public BlockType[] GenerateTerrain(int y) // y - actual layer number
-        {
-            var result = new BlockType[LayerRenderer.LayerWidth * LayerRenderer.LayerWidth * LayerRenderer.LayerWidthSq];
-            for (int x = 0; x < LayerRenderer.LayerWidth; x++)
-            {
-                for (int z = 0; z < LayerRenderer.LayerWidth; z++)
-                {
-
-                    int index = x + z * LayerRenderer.LayerWidthSq;
-                    int r = Random.Range(0, layerNum); // r - just a random value
-                    if (y == 0)
-                    {
-                        result[index] = BlockType.Dirt;
-                    }
-                    else
-                    {
-
-                        int chance = CheckAround(x, y, z, 0);
-                        if (LayerDatas[y - 1].Blocks[index] == BlockType.Dirt)
-                        {
-                            if (y- chance >= layerNum / 2)
-                            {
-                                result[index] = BlockType.Air;
-                            }
-                            else
-                            {
-                                result[index] = BlockType.Dirt;
-                            }
-
-                        }
-                        else
-                        {
-                            if (y-r-chance >= layerNum / 2)
-                            {
-                                result[index] = BlockType.Dirt;
-                            }
-                            else
-                            {
-                                result[index] = BlockType.Air;
-                            }
-                        }
-                    }
-
-                }
-            }
-            return result;
-        }
-
+        
         private int CheckAround(int x, int y, int z, int res)
         {
             int resultat = res;
@@ -169,6 +125,7 @@ namespace WorldGeneration.Layers
                         {
                             LayerDatas[blockWorldPos.y - 1].Renderer.RegenerateMesh();
                         }
+                        else { return; }
                     }
                     else
                     {
@@ -177,6 +134,7 @@ namespace WorldGeneration.Layers
                         {
                             LayerDatas[blockWorldPos.y + 1].Renderer.RegenerateMesh();
                         }
+                        else { return; }
                     }
                 }
             }
