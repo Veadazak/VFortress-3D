@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.AI.Navigation;
 using UnityEditor.Overlays;
 using UnityEngine;
 using WorldGeneration.Layers;
@@ -9,7 +10,9 @@ namespace WorldGeneration.Layers
     public class GameWorld : MonoBehaviour
     {
         public List<LayerData> LayerDatas = new List<LayerData>();
+        public List<Vector3Int> toDoList = new List<Vector3Int>();
 
+        public NavMeshSurface surface;
         public int layerNum;
         public LayerRenderer layerPrefab;
         public TerrainGenerator Generator;
@@ -18,16 +21,18 @@ namespace WorldGeneration.Layers
         public int activeLayerMin = 0;
 
 
+
         private Camera mainCamera;
 
         private void Awake()
         {
             layerNum =  (int)Generator.BaseHeight;
-            activeLayerMax = layerNum;
-            ActiveLayer = layerNum;
+            
         }
         private void Start()
         {
+            activeLayerMax = layerNum;
+            ActiveLayer = layerNum;
             mainCamera = Camera.main;
             Generator.Init();
             for (int y = 0; y <= layerNum; y++)
@@ -43,8 +48,7 @@ namespace WorldGeneration.Layers
                 layer.ParentWorld = this;
                 LayerDatas.Add(layerData);
             }
-
-
+           
         }
 
         
@@ -94,6 +98,7 @@ namespace WorldGeneration.Layers
             if (LayerDatas[0].Renderer.activeLayer != true)
             {
                 LayerActivation();
+                surface.BuildNavMesh();
             }
 
         }
@@ -103,6 +108,7 @@ namespace WorldGeneration.Layers
         {
             if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
             {
+                
                 bool isDestroing = Input.GetMouseButtonDown(0);
                 Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
                 if (Physics.Raycast(ray, out var hitInfo))
@@ -117,15 +123,19 @@ namespace WorldGeneration.Layers
                         blockCenter = hitInfo.point + hitInfo.normal / 2;
                     }
                     Vector3Int blockWorldPos = Vector3Int.FloorToInt(blockCenter);
+                    if (LayerDatas[blockWorldPos.y] != null)
+                    {
+                        toDoList.Add(blockWorldPos);
+                    }
                     int index = blockWorldPos.x + blockWorldPos.z * LayerRenderer.LayerWidthSq;
                     if (isDestroing)
                     {
-                        LayerDatas[blockWorldPos.y].Renderer.DestroyBlock(index);
+                        /*LayerDatas[blockWorldPos.y].Renderer.DestroyBlock(index);
                         if (LayerDatas[blockWorldPos.y - 1] != null)
                         {
                             LayerDatas[blockWorldPos.y - 1].Renderer.RegenerateMesh();
                         }
-                        else { return; }
+                        else { return; }*/
                     }
                     else
                     {
@@ -159,7 +169,18 @@ namespace WorldGeneration.Layers
                 LayerActivation();
             }
         }
-
+        public void RemoveAtL(int i)
+        {
+            int index = toDoList[i].x + toDoList[i].z * LayerRenderer.LayerWidthSq;
+            LayerDatas[toDoList[i].y].Renderer.DestroyBlock(index);
+            if (LayerDatas[toDoList[i].y - 1] != null)
+            {
+                LayerDatas[toDoList[i].y - 1].Renderer.RegenerateMesh();
+            }
+            else { return; }
+            toDoList.RemoveAt(i);
+            surface.BuildNavMesh();
+        }
         private void LayerActivation()
         {
             for (int i = activeLayerMax; i >= 0; i--)

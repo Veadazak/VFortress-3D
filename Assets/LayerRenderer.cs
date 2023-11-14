@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.AI.Navigation;
 using Unity.Profiling;
 using UnityEngine;
 using WorldGeneration;
@@ -22,6 +23,7 @@ namespace WorldGeneration.Layers
         public BlockDatabase BlocksData;
         public LayerData LayerData;
         public GameWorld ParentWorld;
+        public NavMeshSurface surface;
 
 
         private LayerData upperLayer;
@@ -49,7 +51,7 @@ namespace WorldGeneration.Layers
             blockMesh = new Mesh();
             RegenerateMesh();
             GetComponent<MeshFilter>().sharedMesh = blockMesh;
-
+            //surface = GetComponent<NavMeshSurface>();
         }
         private void Update()
         {
@@ -85,6 +87,7 @@ namespace WorldGeneration.Layers
 
         public void RegenerateMesh()
         {
+            
             MeshingMaker.Begin();
             verticies.Clear();
             uvs.Clear();
@@ -108,6 +111,7 @@ namespace WorldGeneration.Layers
             GetComponent<MeshCollider>().sharedMesh = blockMesh;
             GetComponent<MeshFilter>().mesh = blockMesh;
             MeshingMaker.End();
+            //surface.BuildNavMesh();
         }
         //----------------------------- Generate block ---------------
         private void GenerateBlock(int x, int y, int z)

@@ -18,7 +18,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 40
   m_IsActive: 1
 --- !u!4 &6400011899830221753
 Transform:
@@ -98,6 +98,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BlocksData: {fileID: 11400000, guid: 233b2e528820cd049b6ca77094389e32, type: 2}
+  ParentWorld: {fileID: 0}
+  surface: {fileID: 0}
+  UP: 0
+  DOWN: 0
+  activeLayer: 0
 --- !u!64 &1605596898236430231
 MeshCollider:
   m_ObjectHideFlags: 0
