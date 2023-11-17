@@ -32,6 +32,8 @@ namespace WorldGeneration.Layers
         }
         public BlockType[] GenerateTerrain(int y) // y - actual layer number
         {
+            List<Vector2Int> blockPs = new List<Vector2Int>();
+            GameWorld gameWorld = FindObjectOfType<GameWorld>();
             var result = new BlockType[LayerRenderer.LayerWidth * LayerRenderer.LayerWidth * LayerRenderer.LayerWidthSq];
             for (int x = 0; x < LayerRenderer.LayerWidth; x++)
             {
@@ -40,7 +42,7 @@ namespace WorldGeneration.Layers
                     float height = GetHeight(x, z);
 
                     int index = x + z * LayerRenderer.LayerWidthSq;
-
+                    Vector2Int blockP = new Vector2Int(x,z);
                     if (y < height)
                     {
                         int r = Random.Range(0, 10);
@@ -52,6 +54,8 @@ namespace WorldGeneration.Layers
                         {
                             result[index] = BlockType.Dirt;
                         }
+                        blockPs.Add(blockP);
+                        
                     }
                     else
                     {
@@ -60,6 +64,7 @@ namespace WorldGeneration.Layers
 
                 }
             }
+            gameWorld.blocksPoisitions.Add(y, blockPs);
             return result;
         }
         private float GetHeight(float x, float y)

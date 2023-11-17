@@ -43,7 +43,7 @@ namespace Bot
                     }
                     actTime = 0;
                 }
-                NavM.SetDestination(targetPos);
+                //NavM.SetDestination(targetPos);
             }            
         }
     }

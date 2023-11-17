@@ -11,13 +11,16 @@ namespace WorldGeneration.Layers
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class LayerRenderer : MonoBehaviour
     {
-        [SerializeField] public const int LayerWidth = 100;
+        [SerializeField] public const int LayerWidth = 4;
         public const int LayerWidthSq = LayerWidth * LayerWidth;
+        public GridManager gridManager;
 
         private Mesh blockMesh;
         private List<Vector3> verticies = new List<Vector3>();
         private List<Vector2> uvs = new List<Vector2>();
         private List<int> triangles = new List<int>();
+
+        public List<Vector2Int> actBlocks = new List<Vector2Int>();
 
 
         public BlockDatabase BlocksData;
@@ -37,6 +40,7 @@ namespace WorldGeneration.Layers
 
         void Start()
         {
+            gridManager = FindObjectOfType<GridManager>();
             if (LayerData.LayerNumber > 0)
             {
                 lowerLayer = ParentWorld.LayerDatas[LayerData.LayerNumber - 1];
@@ -51,11 +55,10 @@ namespace WorldGeneration.Layers
             blockMesh = new Mesh();
             RegenerateMesh();
             GetComponent<MeshFilter>().sharedMesh = blockMesh;
-            //surface = GetComponent<NavMeshSurface>();
         }
         private void Update()
         {
-            
+
         }
         public void ActivateLayer()
         {
@@ -81,17 +84,18 @@ namespace WorldGeneration.Layers
         public void DestroyBlock(int index)
         {
             LayerData.Blocks[index] = BlockType.Air;
+
             RegenerateMesh();
-            Debug.Log("block # " + index);
         }
 
         public void RegenerateMesh()
         {
-            
+
             MeshingMaker.Begin();
             verticies.Clear();
             uvs.Clear();
             triangles.Clear();
+            actBlocks.Clear();
             for (int x = 0; x < LayerWidth; x++)
             {
                 for (int z = 0; z < LayerWidth; z++)
@@ -111,18 +115,28 @@ namespace WorldGeneration.Layers
             GetComponent<MeshCollider>().sharedMesh = blockMesh;
             GetComponent<MeshFilter>().mesh = blockMesh;
             MeshingMaker.End();
-            //surface.BuildNavMesh();
+            gridManager.AddToDictionary(LayerData.LayerNumber, actBlocks);            
         }
         //----------------------------- Generate block ---------------
         private void GenerateBlock(int x, int y, int z)
         {
 
             Vector3Int blockPosition = new Vector3Int(x, y, z);
+            Vector3Int blPos = new Vector3Int(x, LayerData.LayerNumber, z);
+            Vector2Int bPosition = new Vector2Int(x, z);
 
             BlockType blockType = GetBlockAtPosition(blockPosition);
             
-
-            if (blockType == BlockType.Air) return;
+            if (blockType == BlockType.Air)
+            {
+                if (actBlocks.Contains(bPosition) == true)
+                {
+                    actBlocks.Remove(bPosition);
+                    
+                }
+                gridManager.RemoveFromList(blPos, false);
+                return;
+            }
 
 
             if (GetBlockAtPosition(blockPosition + Vector3Int.right) == 0)
@@ -135,18 +149,26 @@ namespace WorldGeneration.Layers
                 GenerateLeftSide(blockPosition);
                 AddUvs(blockType, Vector2Int.right);
             }
-            if (GetBlockAtPosition(blockPosition + Vector3Int.up) == 0|| GetBlockAtPosition(blockPosition + Vector3Int.up) == BlockType.Hiden)
+            if (GetBlockAtPosition(blockPosition + Vector3Int.up) == 0 || GetBlockAtPosition(blockPosition + Vector3Int.up) == BlockType.Hiden)
             {
                 if (GetBlockAtPosition(blockPosition + Vector3Int.up) == 0)
                 {
                     GenerateTopSide(blockPosition);
                     AddUvs(blockType, Vector2Int.up);
+                    actBlocks.Add(bPosition);
+                    gridManager.AddToList(blPos, false);
                 }
                 else
                 {
                     GenerateTopSide(blockPosition);
                     AddUvs(BlockType.Hiden, Vector2Int.up);
+                    actBlocks.Remove(bPosition);
+                    gridManager.RemoveHidenFromList(blPos, true);
                 }
+            }
+            if(GetBlockAtPosition(blockPosition + Vector3Int.up)!=0)
+            {
+                gridManager.RemoveHidenFromList(blPos, true);
             }
             /*if (GetBlockAtPosition(blockPosition + Vector3Int.down) == 0)
             {
@@ -176,19 +198,19 @@ namespace WorldGeneration.Layers
                 int index = blockPosition.x + blockPosition.z * LayerWidthSq;
                 return LayerData.Blocks[index];
             }
-            if (blockPosition.y < 0 && activeLayer == true)
+            if (blockPosition.y < 0 /*&& activeLayer == true*/)
             {
                 if (lowerLayer == null) { return BlockType.Air; }
                 blockPosition.y++;
                 int index = blockPosition.x + blockPosition.z * LayerWidthSq;
                 return lowerLayer.Blocks[index];
             }
-            if (blockPosition.y > 0 && activeLayer == true)
+            if (blockPosition.y > 0 /*&& activeLayer == true*/)
             {
-                if (upperLayer == null ) { return BlockType.Air; }                
+                if (upperLayer == null) { return BlockType.Air; }
                 blockPosition.y--;
-                int index = blockPosition.x + blockPosition.z * LayerWidthSq ;
-                
+                int index = blockPosition.x + blockPosition.z * LayerWidthSq;
+
                 if (upperLayer.Renderer.activeLayer == false && upperLayer.Blocks[index] != BlockType.Air && upperLayer != null)
                 {
                     return BlockType.Hiden;
@@ -197,11 +219,10 @@ namespace WorldGeneration.Layers
                 {
                     return upperLayer.Blocks[index];
                 }
-
             }
             return BlockType.Air;
         }
-        
+
         //----------------------------- Generate sides ---------------
         private void GenerateLeftSide(Vector3Int blockPosition)
         {

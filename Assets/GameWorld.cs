@@ -11,8 +11,9 @@ namespace WorldGeneration.Layers
     {
         public List<LayerData> LayerDatas = new List<LayerData>();
         public List<Vector3Int> toDoList = new List<Vector3Int>();
+      
+        public Dictionary<int,List<Vector2Int>> blocksPoisitions = new Dictionary<int, List<Vector2Int>>();
 
-        public NavMeshSurface surface;
         public int layerNum;
         public LayerRenderer layerPrefab;
         public TerrainGenerator Generator;
@@ -98,7 +99,6 @@ namespace WorldGeneration.Layers
             if (LayerDatas[0].Renderer.activeLayer != true)
             {
                 LayerActivation();
-                surface.BuildNavMesh();
             }
 
         }
@@ -130,22 +130,29 @@ namespace WorldGeneration.Layers
                     int index = blockWorldPos.x + blockWorldPos.z * LayerRenderer.LayerWidthSq;
                     if (isDestroing)
                     {
-                        /*LayerDatas[blockWorldPos.y].Renderer.DestroyBlock(index);
+                        LayerDatas[blockWorldPos.y].Renderer.DestroyBlock(index);
                         if (LayerDatas[blockWorldPos.y - 1] != null)
                         {
                             LayerDatas[blockWorldPos.y - 1].Renderer.RegenerateMesh();
                         }
-                        else { return; }*/
+                        else { return; }
                     }
                     else
                     {
                         LayerDatas[blockWorldPos.y].Renderer.SpawnBlock(index);
-                        if (LayerDatas[blockWorldPos.y + 1] != null)
+                        if (LayerDatas[blockWorldPos.y-1] != null)
                         {
-                            LayerDatas[blockWorldPos.y + 1].Renderer.RegenerateMesh();
+                            LayerDatas[blockWorldPos.y-1].Renderer.RegenerateMesh();
                         }
                         else { return; }
                     }
+                }
+            }
+            if(Input.GetKeyDown(KeyCode.R))
+            {
+                for(int y = 0;y<LayerDatas.Count;y++)
+                {
+                    LayerDatas[y].Renderer.RegenerateMesh();
                 }
             }
 
@@ -179,7 +186,7 @@ namespace WorldGeneration.Layers
             }
             else { return; }
             toDoList.RemoveAt(i);
-            surface.BuildNavMesh();
+            
         }
         private void LayerActivation()
         {
