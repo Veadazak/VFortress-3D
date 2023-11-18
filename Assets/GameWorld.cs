@@ -130,12 +130,12 @@ namespace WorldGeneration.Layers
                     int index = blockWorldPos.x + blockWorldPos.z * LayerRenderer.LayerWidthSq;
                     if (isDestroing)
                     {
-                        LayerDatas[blockWorldPos.y].Renderer.DestroyBlock(index);
+                        /*LayerDatas[blockWorldPos.y].Renderer.DestroyBlock(index);
                         if (LayerDatas[blockWorldPos.y - 1] != null)
                         {
                             LayerDatas[blockWorldPos.y - 1].Renderer.RegenerateMesh();
                         }
-                        else { return; }
+                        else { return; }*/
                     }
                     else
                     {

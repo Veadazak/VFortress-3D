@@ -2,64 +2,71 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-public class GridManager : MonoBehaviour
+namespace Pathfinding.Grid
 {
-
-    public Dictionary<int, List<Vector2Int>> blocksCoordinates = new Dictionary<int, List<Vector2Int>>();
-
-    public List<Vector2Int> check = new List<Vector2Int>();
-    public List<Vector3Int> test = new List<Vector3Int>();
-    public void AddToDictionary(int layer, List<Vector2Int> pos)
+    public class GridManager : MonoBehaviour
     {
+        Dictionary<Vector3Int, Node> grid = new Dictionary<Vector3Int, Node>();
+        public Dictionary<Vector3Int, Node> Grid { get { return grid; } }
 
-        if (blocksCoordinates.ContainsKey(layer) == true)
+        public List<Vector3Int> coordinates = new List<Vector3Int>();
+        public Node GetNode(Vector3Int coordinates)
         {
-            blocksCoordinates.Remove(layer);
-            blocksCoordinates.Add(layer, pos);
+            if (grid.ContainsKey(coordinates))
+            {
+                return grid[coordinates];
+            }
+            return null;
         }
-        else blocksCoordinates.Add(layer, pos);
-    }
-    public void AddToList(Vector3Int summPos , bool isHiden)
-    {
-        Vector3Int lowerLVL = new Vector3Int(summPos.x, summPos.y - 1, summPos.z);
-        Vector3Int upperLVL = new Vector3Int(summPos.x, summPos.y + 1, summPos.z);
-        if (test.Contains(summPos))
-        {
-            test.Remove(summPos);
-            test.Add(summPos);
+        void CreateGrid()
+        {   
+            grid.Clear();
+            foreach(Vector3Int vector in coordinates)
+            {
+                Vector3Int coordinates = vector;
+                grid.Add(coordinates, new Node(coordinates, true));
+            }
         }
-
-        if (!test.Contains(summPos) && !isHiden)
+        public void AddToList(Vector3Int summPos, bool isHiden)
         {
-            test.Remove(lowerLVL);
-            test.Add(summPos);
-        } 
-
-        /*if (test.Contains(lowerLVL) && test.Contains(upperLVL))
+            Vector3Int lowerLVL = new Vector3Int(summPos.x, summPos.y - 1, summPos.z);
+            Vector3Int upperLVL = new Vector3Int(summPos.x, summPos.y + 1, summPos.z);
+            if (coordinates.Contains(summPos))
+            {
+                coordinates.Remove(summPos);
+                coordinates.Add(summPos);
+            }
+            if (!coordinates.Contains(summPos) && !isHiden)
+            {
+                coordinates.Remove(lowerLVL);
+                coordinates.Add(summPos);
+            }
+            if (coordinates.Contains(lowerLVL) && !coordinates.Contains(upperLVL))
+            {
+                coordinates.Remove(lowerLVL);
+                coordinates.Add(summPos);
+            }
+            CreateGrid();
+        }
+        public void RemoveFromList(Vector3Int summPos, bool isHiden)
         {
-            test.Remove(lowerLVL);
-            test.Remove(summPos);
+            Vector3Int lowerLVL = new Vector3Int(summPos.x, summPos.y - 1, summPos.z);
+            coordinates.Remove(summPos);
+            if (isHiden)
+            {
+                coordinates.Remove(lowerLVL);
+            }
+            CreateGrid();
+        }
+        //------------------------------------for the future, to avoid blocks ------------------------
+        /*public void BlockNode(Vector3Int coordinates)
+        {
+            if (grid.ContainsKey(coordinates))
+            {
+                grid[coordinates].isWalkable = false;
+            }
         }*/
-        if (test.Contains(lowerLVL) && !test.Contains(upperLVL))
-        {
-            test.Remove(lowerLVL);
-            test.Add(summPos);
-        }
-
+        //----------------------------------------------------------------------------------------------
     }
-    public void RemoveFromList(Vector3Int summPos, bool isHiden)
-    {
-
-        test.Remove(summPos);
-
-        //else test.Add(summPos);
-    }
-    public void RemoveHidenFromList(Vector3Int summPos, bool isHiden)
-    {
-        Vector3Int lowerLVL = new Vector3Int(summPos.x, summPos.y - 1, summPos.z);
-        Vector3Int upperLVL = new Vector3Int(summPos.x, summPos.y + 1, summPos.z);
-        test.Remove(lowerLVL);
-        test.Remove(summPos);
-    }
-
 }
+

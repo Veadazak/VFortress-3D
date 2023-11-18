@@ -43,7 +43,7 @@ namespace WorldGeneration.Layers
 
                     int index = x + z * LayerRenderer.LayerWidthSq;
                     Vector2Int blockP = new Vector2Int(x,z);
-                    if (y < height)
+                    if (y+5 < height)
                     {
                         int r = Random.Range(0, 10);
                         if (r>8)

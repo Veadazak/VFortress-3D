@@ -8,14 +8,14 @@ namespace Pathfinding
     {
         public Vector3Int coordinates;
         public bool isWalkable;
-        public bool isExplorable;
+        public bool isExplored;
         public bool isPath;
         public Node connectedTo;
 
-        public Node(Vector3Int coordiantes, bool isExplorable)
+        public Node(Vector3Int coordinates, bool isExplored)
         {
-            this.coordinates = coordiantes;
-            this.isExplorable = isExplorable;
+            this.coordinates = coordinates;
+            this.isExplored = isExplored;
         }
     }
 }
