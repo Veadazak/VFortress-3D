@@ -33,21 +33,6 @@ namespace Pathfinding
         void Start()
         {
             world = FindObjectOfType<GameWorld>();
-        }
-        private void Update()
-        {
-            
-            timeSpend += Time.deltaTime;
-            if (timeSpend > checkTimer&& world.toDoList[0]!=null)
-            {
-                botPos = new Vector3Int(Mathf.FloorToInt(transform.position.x), Mathf.FloorToInt(transform.position.y - 1), Mathf.FloorToInt(transform.position.z));
-                startCoordinates = botPos;
-                PathFind();
-                timeSpend = 0;
-            }
-        }
-        public void PathFind()
-        {
             directions.Clear();
             for (int x = -1; x <= 1; x++)
             {
@@ -64,11 +49,28 @@ namespace Pathfinding
                     }
                 }
             }
+        }
+        private void Update()
+        {
+            
+            timeSpend += Time.deltaTime;
+            if(world.toDoList.Count == 0)
+            {
+                timeSpend = 0;
+            }
+            else if (timeSpend > checkTimer)
+            {
+                botPos = new Vector3Int(Mathf.FloorToInt(transform.position.x), Mathf.FloorToInt(transform.position.y - 1), Mathf.FloorToInt(transform.position.z));
+                startCoordinates = botPos;
+                PathFind();
+                timeSpend = 0;
+            }
+        }
+        public void PathFind()
+        {            
             gridManager = FindObjectOfType<GridManager>();
             if (gridManager != null)
-            {
-
-                Vector3Int botPos2 = new Vector3Int(Mathf.FloorToInt(transform.position.x + 1), Mathf.FloorToInt(30), Mathf.FloorToInt(transform.position.z));
+            {                
                 grid = gridManager.Grid;
                 startNode = grid[botPos];
                 destinationNode = grid[world.toDoList[0]];
@@ -88,17 +90,6 @@ namespace Pathfinding
             GetNewPath(startCoordinates);
             gameObject.GetComponent<BotsControl>().RecalculatePath(true);
         }
-
-        public void ResetNodes()
-        {
-            foreach (KeyValuePair<Vector3Int, Node> entry in grid)
-            {
-                entry.Value.connectedTo = null;
-                entry.Value.isExplored = false;
-                entry.Value.isPath = false;
-            }
-        }
-
         public List<Node> GetNewPath()
         {
             return GetNewPath(startCoordinates);
@@ -109,6 +100,15 @@ namespace Pathfinding
             ResetNodes();
             BreadthFirstSearch(coordinates);
             return BuildPath();
+        }
+        public void ResetNodes()
+        {
+            foreach (KeyValuePair<Vector3Int, Node> entry in grid)
+            {
+                entry.Value.connectedTo = null;
+                entry.Value.isExplored = false;
+                entry.Value.isPath = false;
+            }
         }
         void BreadthFirstSearch(Vector3Int coordinates)
         {
@@ -123,7 +123,7 @@ namespace Pathfinding
             frontier.Enqueue(grid[coordinates]);
             reached.Add(coordinates, grid[coordinates]);
 
-            while (frontier.Count >= 0 && isRunning)
+            while (frontier.Count > 0 && isRunning)
             {
                 currentSearchNode = frontier.Dequeue();
                 currentSearchNode.isExplored = true;

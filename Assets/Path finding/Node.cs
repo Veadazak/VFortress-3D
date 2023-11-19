@@ -7,7 +7,7 @@ namespace Pathfinding
     public class Node
     {
         public Vector3Int coordinates;
-        public bool isWalkable;
+        public bool isWalkable = true;
         public bool isExplored;
         public bool isPath;
         public Node connectedTo;
