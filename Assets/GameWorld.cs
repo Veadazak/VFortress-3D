@@ -106,7 +106,7 @@ namespace WorldGeneration.Layers
 
         private void CheckInput()
         {
-            if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+            if (Input.GetMouseButtonDown(0) && Input.GetKey(KeyCode.LeftControl) || Input.GetMouseButtonDown(1))
             {
                 
                 bool isDestroing = Input.GetMouseButtonDown(0);

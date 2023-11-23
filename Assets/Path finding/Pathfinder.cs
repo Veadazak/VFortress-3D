@@ -34,7 +34,11 @@ namespace Pathfinding
         {
             world = FindObjectOfType<GameWorld>();
             directions.Clear();
-            for (int x = -1; x <= 1; x++)
+            directions.Add(new Vector3Int(-1, 0, 0));
+            directions.Add(new Vector3Int(0, 0, 1));
+            directions.Add(new Vector3Int(1, 0, 0));
+            directions.Add(new Vector3Int(0, 0, -1));
+            /*for (int x = -1; x <= 1; x++)
             {
                 for (int y = -1; y <= 1; y++)
                 {
@@ -48,11 +52,10 @@ namespace Pathfinding
                         }
                     }
                 }
-            }
+            }*/
         }
         private void Update()
-        {
-            
+        {            
             timeSpend += Time.deltaTime;
             if(world.toDoList.Count == 0)
             {

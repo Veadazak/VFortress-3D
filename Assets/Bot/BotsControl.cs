@@ -2,6 +2,8 @@ using Pathfinding;
 using Pathfinding.Grid;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using WorldGeneration.Layers;
@@ -17,9 +19,11 @@ namespace Bot
 
         GridManager gridManager;
         Pathfinder pathfinder;
+        GameWorld world;
 
         private void Awake()
         {
+            world =FindObjectOfType<GameWorld>();
             gridManager = GetComponent<GridManager>();
             pathfinder = GetComponent<Pathfinder>();
         }
@@ -27,7 +31,6 @@ namespace Bot
         {
             path.Clear();
             Vector3Int coordinates = new Vector3Int();
-
             if (resetPath)
             {
                 coordinates = pathfinder.startCoordinates;
@@ -37,9 +40,7 @@ namespace Bot
                 Vector3Int botPos = new Vector3Int(Mathf.FloorToInt(transform.position.x), Mathf.FloorToInt(transform.position.y), Mathf.FloorToInt(transform.position.z));
                 coordinates = botPos;
             }
-
-            StopAllCoroutines();
-           
+            StopAllCoroutines();           
             path = pathfinder.GetNewPath(coordinates);
             StartCoroutine(FollowPath());
         }
@@ -56,42 +57,28 @@ namespace Bot
                 Vector3 startPosition = transform.position;
                 Vector3 endPosition = path[i].coordinates+new Vector3Int(0,3/2,0);
                 float travelPercent = 0f;
-
-                transform.LookAt(endPosition);
-
+                                
+                var targetXZ= new Vector3(endPosition.x+0.5f, gameObject.GetComponentInChildren<Body>().transform.position.y,endPosition.z+0.5f);
+                gameObject.GetComponentInChildren<Body>().transform.LookAt(targetXZ,Vector3.up);
+                
                 while (travelPercent < 1f)
                 {
                     travelPercent += Time.deltaTime * speed;
                     transform.position = Vector3.Lerp(startPosition, endPosition, travelPercent);
                     yield return new WaitForEndOfFrame();
                 }
-            }
-
+            }       
         }
         private void Update()
         {
-
-            /*actTime += Time.deltaTime;
-            if (actTime > checkTime)
+            if (path.Count>0)
             {
-                float minDist = viewRange;
-                for (int i = 0; i < World.toDoList.Count; i++)
+                Vector3Int botPos = new Vector3Int(Mathf.FloorToInt(transform.position.x), Mathf.FloorToInt(transform.position.y - 1), Mathf.FloorToInt(transform.position.z));
+                if (botPos == path[path.Count - 1].coordinates)
                 {
-                    float ditance = Vector3.Distance(transform.position, World.toDoList[i]);
-                    if (ditance < minDist)
-                    {
-                        minDist = ditance;
-                        targetPos = World.toDoList[i];
-                        if(ditance<2)
-                        { 
-                            int index = targetPos.x+targetPos.z*LayerRenderer.LayerWidthSq;
-                            World.RemoveAtL(i);
-                            //World.LayerDatas[targetPos.y].Renderer.DestroyBlock(index);
-                        }                        
-                    }
-                    actTime = 0;
+                    world.toDoList.Remove(path[path.Count - 1].coordinates);
                 }
-            }         */
+            }
         }
     }
 }
