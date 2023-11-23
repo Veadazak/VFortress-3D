@@ -1,3 +1,4 @@
+using Pathfinding.Grid;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.AI.Navigation;
@@ -20,6 +21,9 @@ namespace WorldGeneration.Layers
         public int ActiveLayer;
         public int activeLayerMax;
         public int activeLayerMin = 0;
+        GridManager gridManager;
+        public GameObject bot;
+        List<Vector3Int> coosrdiantesForBot = new List<Vector3Int>();
 
 
 
@@ -28,6 +32,7 @@ namespace WorldGeneration.Layers
         private void Awake()
         {
             layerNum =  (int)Generator.BaseHeight;
+            gridManager = FindObjectOfType<GridManager>();
             
         }
         private void Start()
@@ -48,67 +53,33 @@ namespace WorldGeneration.Layers
                 layer.LayerData = layerData;
                 layer.ParentWorld = this;
                 LayerDatas.Add(layerData);
-            }
-           
+            }            
         }
-
-        
-        private int CheckAround(int x, int y, int z, int res)
+        public void InstBot(Vector3Int position)
         {
-            int resultat = res;
-
-            int p5 = x + z * LayerRenderer.LayerWidthSq; ; // - center
-
-
-            if (x > 2 && x < LayerRenderer.LayerWidth - 2 &&
-                z > 2 && z < LayerRenderer.LayerWidth - 2)
-            {
-                int p1 = (x - 1) + (z + 1) * LayerRenderer.LayerWidthSq;
-                int p2 = (x) + (z + 1) * LayerRenderer.LayerWidthSq;
-                int p3 = (x + 1) + (z + 1) * LayerRenderer.LayerWidthSq;
-                int p4 = (x - 1) + (z) * LayerRenderer.LayerWidthSq;
-                int p6 = (x + 1) + (z) * LayerRenderer.LayerWidthSq;
-                int p7 = (x - 1) + (z - 1) * LayerRenderer.LayerWidthSq;
-                int p8 = (x) + (z - 1) * LayerRenderer.LayerWidthSq;
-                int p9 = (x + 1) + (z - 1) * LayerRenderer.LayerWidthSq;
-                if (LayerDatas[y - 1].Blocks[p1] == BlockType.Dirt) { resultat++; }
-                if (LayerDatas[y - 1].Blocks[p2] == BlockType.Dirt) { resultat++; }
-                if (LayerDatas[y - 1].Blocks[p3] == BlockType.Dirt) { resultat++; }
-                if (LayerDatas[y - 1].Blocks[p4] == BlockType.Dirt) { resultat++; }
-                if (LayerDatas[y - 1].Blocks[p6] == BlockType.Dirt) { resultat++; }
-                if (LayerDatas[y - 1].Blocks[p7] == BlockType.Dirt) { resultat++; }
-                if (LayerDatas[y - 1].Blocks[p8] == BlockType.Dirt) { resultat++; }
-                if (LayerDatas[y - 1].Blocks[p9] == BlockType.Dirt) { resultat++; }
-            }
-
-            if (x == 0 || x == LayerRenderer.LayerWidth)
-            {
-                resultat += 3;
-            }
-            if (z == 0 || z == LayerRenderer.LayerWidth)
-            {
-                resultat += 3;
-            }
-            Debug.Log(resultat);
-            return resultat;
-
+            Instantiate(bot, position, Quaternion.identity);   
         }
+
         private void Update()
         {
             CheckInput();
             if (LayerDatas[0].Renderer.activeLayer != true)
             {
                 LayerActivation();
+                coosrdiantesForBot = gridManager.coordinates;
+                for (int i = 0; i < 2; i++)
+                {
+                    Vector3Int prePos = coosrdiantesForBot[Random.Range(0, coosrdiantesForBot.Count)];
+                    Vector3Int finPos = new Vector3Int(prePos.x, prePos.y+1, prePos.z);
+                    Instantiate(bot,finPos ,Quaternion.identity);
+                }
             }
-
         }
-
 
         private void CheckInput()
         {
             if (Input.GetMouseButtonDown(0) && Input.GetKey(KeyCode.LeftControl) || Input.GetMouseButtonDown(1))
-            {
-                
+            {                
                 bool isDestroing = Input.GetMouseButtonDown(0);
                 Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
                 if (Physics.Raycast(ray, out var hitInfo))
@@ -130,6 +101,7 @@ namespace WorldGeneration.Layers
                     int index = blockWorldPos.x + blockWorldPos.z * LayerRenderer.LayerWidthSq;
                     if (isDestroing)
                     {
+                        gridManager.PathSearch();
                         /*LayerDatas[blockWorldPos.y].Renderer.DestroyBlock(index);
                         if (LayerDatas[blockWorldPos.y - 1] != null)
                         {
@@ -143,6 +115,7 @@ namespace WorldGeneration.Layers
                         if (LayerDatas[blockWorldPos.y-1] != null)
                         {
                             LayerDatas[blockWorldPos.y-1].Renderer.RegenerateMesh();
+                            gridManager.PathSearch();
                         }
                         else { return; }
                     }
@@ -154,6 +127,7 @@ namespace WorldGeneration.Layers
                 {
                     LayerDatas[y].Renderer.RegenerateMesh();
                 }
+                gridManager.PathSearch();
             }
 
             if (Input.GetKeyDown(KeyCode.UpArrow))

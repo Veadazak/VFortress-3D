@@ -27,17 +27,27 @@ namespace Pathfinding
         GridManager gridManager;
         Dictionary<Vector3Int, Node> grid = new Dictionary<Vector3Int, Node>();
         Vector3Int botPos = new Vector3Int();
-        public float checkTimer = 5;
-        float timeSpend;
+        
         public GameWorld world;
         void Start()
         {
+            gridManager = FindObjectOfType<GridManager>();
             world = FindObjectOfType<GameWorld>();
             directions.Clear();
             directions.Add(new Vector3Int(-1, 0, 0));
             directions.Add(new Vector3Int(0, 0, 1));
             directions.Add(new Vector3Int(1, 0, 0));
             directions.Add(new Vector3Int(0, 0, -1));
+
+            directions.Add(new Vector3Int(-1, 1, 0));
+            directions.Add(new Vector3Int(0, 1, 1));
+            directions.Add(new Vector3Int(1, 1, 0));
+            directions.Add(new Vector3Int(0, 1, -1));
+
+            directions.Add(new Vector3Int(-1, -1, 0));
+            directions.Add(new Vector3Int(0, -1, 1));
+            directions.Add(new Vector3Int(1, -1, 0));
+            directions.Add(new Vector3Int(0, -1, -1));
             /*for (int x = -1; x <= 1; x++)
             {
                 for (int y = -1; y <= 1; y++)
@@ -56,25 +66,25 @@ namespace Pathfinding
         }
         private void Update()
         {            
-            timeSpend += Time.deltaTime;
-            if(world.toDoList.Count == 0)
+            
+
+            if( gridManager.gridGenerated == !gridManager.gridGenerated)
             {
-                timeSpend = 0;
-            }
-            else if (timeSpend > checkTimer)
-            {
-                botPos = new Vector3Int(Mathf.FloorToInt(transform.position.x), Mathf.FloorToInt(transform.position.y - 1), Mathf.FloorToInt(transform.position.z));
-                startCoordinates = botPos;
                 PathFind();
-                timeSpend = 0;
             }
         }
         public void PathFind()
-        {            
-            gridManager = FindObjectOfType<GridManager>();
+        {
+            botPos = new Vector3Int(Mathf.FloorToInt(transform.position.x), Mathf.FloorToInt(transform.position.y - 1), Mathf.FloorToInt(transform.position.z));
+            startCoordinates = botPos;
+            
             if (gridManager != null)
             {                
                 grid = gridManager.Grid;
+                if(grid[botPos]==null)
+                {
+                    transform.position = new Vector3Int(Mathf.FloorToInt(transform.position.x), Mathf.FloorToInt(transform.position.y+1), Mathf.FloorToInt(transform.position.z));
+                }
                 startNode = grid[botPos];
                 destinationNode = grid[world.toDoList[0]];
                 destinationCoordinates = world.toDoList[0];
@@ -172,7 +182,21 @@ namespace Pathfinding
 
             while (currentNode.connectedTo != null)
             {
+                if(currentNode.coordinates.y<currentNode.connectedTo.coordinates.y)
+                {
+                    Vector3Int higherPosCoordinate = currentNode.coordinates + Vector3Int.up;
+                    Node getHigherPosition = new Node(higherPosCoordinate,true);
+                    path.Add(getHigherPosition);
+                }
+                if(currentNode.coordinates.y>currentNode.connectedTo.coordinates.y)
+                {
+                    Vector3Int higherPosCoordinate = currentNode.connectedTo.coordinates + Vector3Int.up;
+                    Node getHigherPosition = new Node(higherPosCoordinate,true);
+                    path.Add(getHigherPosition);
+                }
+
                 currentNode = currentNode.connectedTo;
+
                 path.Add(currentNode);
                 currentNode.isPath = true;
             }

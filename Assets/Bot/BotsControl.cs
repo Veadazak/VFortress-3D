@@ -73,10 +73,13 @@ namespace Bot
         {
             if (path.Count>0)
             {
+                float range = 5;
                 Vector3Int botPos = new Vector3Int(Mathf.FloorToInt(transform.position.x), Mathf.FloorToInt(transform.position.y - 1), Mathf.FloorToInt(transform.position.z));
-                if (botPos == path[path.Count - 1].coordinates)
+                float distance = Vector3Int.Distance(botPos, path[path.Count - 1].coordinates);
+                if (distance<range)
                 {
                     world.toDoList.Remove(path[path.Count - 1].coordinates);
+                    gridManager.PathSearch();
                 }
             }
         }

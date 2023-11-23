@@ -12,7 +12,7 @@ namespace WorldGeneration.Layers
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class LayerRenderer : MonoBehaviour
     {
-        [SerializeField] public const int LayerWidth = 20;
+        [SerializeField] public const int LayerWidth = 50;
         public const int LayerWidthSq = LayerWidth * LayerWidth;
         public GridManager gridManager;
 
