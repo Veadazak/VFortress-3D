@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1e7e3bc431d6a647b5ba5289cdf9267, type: 3}
   m_Name: TestTerrain
   m_EditorClassIdentifier: 
-  BaseHeight: 30
+  BaseHeight: 10
   Octaves:
   - NoiseType: 0
     Frequency: 0.25
